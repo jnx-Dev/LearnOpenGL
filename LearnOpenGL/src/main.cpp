@@ -22,6 +22,12 @@ const char* fragmentShaderSource = "#version 460 core\n"
 "{\n"
 "FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);"
 "}\n";
+const char* fragmentShaderSourceY = "#version 460 core\n"
+"out vec4 FragColor;"
+"void main()"
+"{\n"
+"FragColor = vec4(1.0f, 1.0f, 0.0f, 1.0f);"
+"}\n";
 
 int main () {
     // glfw: initialize and configure
@@ -89,6 +95,18 @@ int main () {
         std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
     }
 
+    // Fragment Shader Y
+    unsigned int fragmentShaderY = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShaderY, 1, &fragmentShaderSourceY, NULL);
+    glCompileShader(fragmentShaderY);
+
+    glGetShaderiv(fragmentShaderY, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(fragmentShaderY, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+
     // Shader Programm
     unsigned int shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
@@ -100,9 +118,16 @@ int main () {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::PROGRAMM::COMPILATION_FAILED\n" << infoLog << std::endl;
     }
+
+    unsigned int shaderProgramY = glCreateProgram();
+    glAttachShader(shaderProgramY, vertexShader);
+    glAttachShader(shaderProgramY, fragmentShaderY);
+    glLinkProgram(shaderProgramY);
+
     // Deleting the Shader because we don't need them anymore
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+    glDeleteShader(fragmentShaderY);
 
     // Zu Zeichnendes Dreieck
     float vertices[] = {
@@ -160,7 +185,9 @@ int main () {
         // Drawing
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glUseProgram(shaderProgramY);
+        glDrawArrays(GL_TRIANGLES, 1, 4);
         // glBindVertexArray(0); // no need to unbind it every time 
 
         // Check and call events and swap the buffers
